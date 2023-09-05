@@ -1,0 +1,36 @@
+import pandas as pd
+import numpy as np
+import os
+
+# List with all csv files
+csv_path = os.path.join(os.getcwd(), "cleaned_data")
+csv_files = os.listdir(csv_path)
+csv_files_path = [os.path.join(csv_path, csv) for csv in csv_files]
+
+# Load all the datasets in one data frame
+df_list = [pd.read_csv(csv) for csv in csv_files_path]
+df = pd.concat(df_list)
+
+# Sort the data frame by the csv index and the png file name
+df.sort_values(by=["csv_index", "file_name"], inplace=True)
+
+df["mouse1_topleft_x"] = pd.to_numeric(df["mouse1_topleft_x"], errors='coerce')
+
+# Create new features for mouse 1
+df["height_1"] = df["mouse1_topleft_y"] - df["mouse1_rightdown_y"]
+df["width_1"] = df["mouse1_rightdown_x"] - df["mouse1_topleft_x"]
+df["x_1"] = df["mouse1_topleft_x"]
+df["y_1"] = df["mouse1_rightdown_y"]
+
+# Create new features for mouse 2
+df["height_2"] = df["mouse2_topleft_y"] - df["mouse2_rightdown_y"]
+df["width_2"] = df["mouse2_rightdown_x"] - df["mouse2_topleft_x"]
+df["x_2"] = df["mouse2_topleft_x"]
+df["y_2"] = df["mouse2_rightdown_y"]
+
+# Reorder columns
+columns = df.columns[4:-8].append(df.columns[-8:])
+df = df[columns]
+
+# Write the data frame into a csv file
+df.to_csv("processed_data.csv", index=False)
